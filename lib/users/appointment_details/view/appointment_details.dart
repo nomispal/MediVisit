@@ -1,5 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
+import 'package:hams/users/chat_view.dart';
 import 'package:hams/users/review/view/review_screen.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class Appointmentdetails extends StatelessWidget {
   final DocumentSnapshot doc;
@@ -7,6 +13,9 @@ class Appointmentdetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? ''; // Get the current user's ID
+    bool canChat = doc['status'] == 'accept' || doc['status'] == 'complete';
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.whiteColor,
@@ -106,54 +115,91 @@ class Appointmentdetails extends StatelessWidget {
                   "Status".text.semiBold.make(),
                   doc['status'].toString().text.make(),
                   40.heightBox,
-                  doc['status'] == "complete"
-                      ? Align(
-                          alignment: Alignment.center,
-                          child: doc['review'] == "false"
-                              ? InkWell(
-                                  onTap: () {
-                                    Get.to(
-                                      () => ReviewPage(
-                                        docId: doc['appWith'],
-                                        documetId: doc.id,
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    height: 50,
-                                    width: 150,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primeryColor,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "Give a Review",
-                                        style: TextStyle(
-                                          color: AppColors.whiteColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  height: 50,
-                                  width: 150,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primeryColor,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      "Thanks for Review",
-                                      style: TextStyle(
-                                        color: AppColors.whiteColor,
-                                      ),
-                                    ),
-                                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (doc['status'] == "complete") ...[
+                        doc['review'] == "false"
+                            ? InkWell(
+                          onTap: () {
+                            Get.to(
+                                  () => ReviewPage(
+                                docId: doc['appWith'],
+                                documetId: doc.id,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 50,
+                            width: 150,
+                            decoration: BoxDecoration(
+                              color: AppColors.primeryColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Give a Review",
+                                style: TextStyle(
+                                  color: AppColors.whiteColor,
                                 ),
+                              ),
+                            ),
+                          ),
                         )
-                      : Container()
+                            : Container(
+                          height: 50,
+                          width: 150,
+                          decoration: BoxDecoration(
+                            color: AppColors.primeryColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              "Thanks for Review",
+                              style: TextStyle(
+                                color: AppColors.whiteColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (canChat) ...[
+                        if (doc['status'] == "complete") 10.widthBox, // Add spacing if both buttons are present
+                        InkWell(
+                          onTap: () {
+                            Get.to(() => ChatView(
+                              doctorId: doc['appWith'],
+                              doctorName: doc['appDocName'],
+                              userId: currentUserId,
+                            ));
+                          },
+                          child: Container(
+                            height: 50,
+                            width: 150,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primeryColor,
+                                  AppColors.greenColor
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Chat with Doctor",
+                                style: TextStyle(
+                                  color: AppColors.whiteColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),

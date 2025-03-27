@@ -4,6 +4,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
 import 'package:hams/users/all%20reviews/all_reviews.dart';
+import 'package:hams/users/chat_view.dart';
 import 'package:hams/users/doctor_profile/widgets/review_card.dart';
 import 'package:velocity_x/velocity_x.dart';
 import '../../book_appointment/view/appointment_view.dart';
@@ -13,8 +14,21 @@ class DoctorProfile extends StatelessWidget {
   final DocumentSnapshot doc;
   const DoctorProfile({super.key, required this.doc});
 
+  // Check if the user has an appointment with this doctor
+  Future<bool> hasAppointment(String userId) async {
+    var appointments = await FirebaseFirestore.instance
+        .collection('appointments')
+        .where('appBy', isEqualTo: userId)
+        .where('appWith', isEqualTo: doc['docId'])
+        .get();
+    return appointments.docs.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Assuming you have the current user's ID (you might get this from auth)
+    String currentUserId = "user123"; // Replace with actual user ID from auth
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -27,7 +41,7 @@ class DoctorProfile extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Custom AppBar
+              // Custom AppBar (unchanged)
               Container(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -44,11 +58,11 @@ class DoctorProfile extends StatelessWidget {
                           .bold
                           .makeCentered(),
                     ),
-                    const SizedBox(width: 48), // To balance the back button
+                    const SizedBox(width: 48),
                   ],
                 ),
               ),
-              // Main Content
+              // Main Content (unchanged)
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -266,15 +280,42 @@ class DoctorProfile extends StatelessWidget {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 25),
-        child: CoustomButton(
-          onTap: () {
-            Get.to(
-                  () => AllReviewsPage(
-                doctorId: doc.id,
-              ),
-            );
-          },
-          title: "See All Reviews",
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FutureBuilder<bool>(
+              future: hasAppointment(currentUserId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                if (snapshot.hasData && snapshot.data == true) {
+                  return CoustomButton(
+                    onTap: () {
+                      Get.to(() => ChatView(
+                        doctorId: doc['docId'],
+                        doctorName: doc['docName'],
+                        userId: currentUserId,
+                      ));
+                    },
+                    title: "Chat with Doctor",
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            10.heightBox,
+            CoustomButton(
+              onTap: () {
+                Get.to(
+                      () => AllReviewsPage(
+                    doctorId: doc.id,
+                  ),
+                );
+              },
+              title: "See All Reviews",
+            ),
+          ],
         ),
       ),
     );
@@ -299,7 +340,6 @@ class DoctorProfile extends StatelessWidget {
 
         var reviews = snapshot.data!.docs;
 
-        // Only display up to 5 reviews, or fewer if there are less than 5
         int reviewCount = reviews.length > 5 ? 5 : reviews.length;
 
         return SizedBox(

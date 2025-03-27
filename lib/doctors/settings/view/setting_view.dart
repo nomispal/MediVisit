@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:hams/doctors/settings/controller/profile_controller.dart';
+import 'package:hams/doctors/settings/controller/DoctorprofileController.dart';
 import 'package:hams/general/consts/consts.dart';
 import 'package:hams/users/auth/view/login_page.dart';
 import 'package:hams/users/widgets/coustom_iconbutton.dart';
@@ -13,7 +13,7 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var controller = Get.put(ProfileController());
+    var controller = Get.put(Doctorprofilecontroller());
 
     return Scaffold(
       body: Container(
@@ -139,7 +139,7 @@ class SettingsView extends StatelessWidget {
   }
 
   void _showImagePickerBottomSheet(
-      BuildContext context, ProfileController controller) {
+      BuildContext context, Doctorprofilecontroller controller) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Wrap(

@@ -6,14 +6,14 @@ import 'package:hams/users/widgets/coustom_iconbutton.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
 import '../../auth/controller/signup_controller.dart';
-import '../controller/profile_controller.dart';
+import '../controller/UserprofileController.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var controller = Get.put(ProfileController());
+    var controller = Get.put(Userprofilecontroller());
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -214,7 +214,7 @@ class SettingsView extends StatelessWidget {
   }
 
   void _showImagePickerBottomSheet(
-      BuildContext context, ProfileController controller) {
+      BuildContext context, Userprofilecontroller controller) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.whiteColor,
