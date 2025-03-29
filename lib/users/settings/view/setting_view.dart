@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
-import 'package:hams/users/auth/view/login_page.dart';
+import 'package:hams/users/auth/view/role_selection_page.dart';
 import 'package:hams/users/widgets/coustom_iconbutton.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
-import '../../auth/controller/signup_controller.dart';
 import '../controller/UserprofileController.dart';
 
 class SettingsView extends StatelessWidget {
@@ -96,7 +95,7 @@ class SettingsView extends StatelessWidget {
                                         image: controller.profileImageUrl
                                             .value.isEmpty
                                             ? const AssetImage(
-                                          'assets/images/login.png',
+                                          'assets/images/img_login.jpg',
                                         )
                                             : NetworkImage(
                                           controller
@@ -188,9 +187,9 @@ class SettingsView extends StatelessWidget {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
-                                onTap: () {
-                                  SignupController().signout();
-                                  Get.offAll(() => const LoginView());
+                                onTap: () async {
+                                  await controller.signOut(); // Call signOut
+                                  Get.offAll(() => const RoleSelectionPage());
                                 },
                                 title: "Logout",
                                 icon: Icon(

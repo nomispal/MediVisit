@@ -4,22 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
 import 'package:hams/users/home/view/home.dart';
-
-import '../../../doctors/home/view/home.dart'; // User home screen
+import '../../../doctors/home/view/home.dart';
 
 class LoginController extends GetxController {
   UserCredential? userCredential;
   var isLoading = false.obs;
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
-  var selectedRole = "User".obs; // Role selection: "User" or "Doctor"
+  final String role; // Role is now passed via constructor
+
+  LoginController({required this.role});
 
   final GlobalKey<FormState> formkey = GlobalKey<FormState>();
-
-  // Toggle role between User and Doctor
-  void setRole(String role) {
-    selectedRole.value = role;
-  }
 
   // Login method for both user and doctor
   loginUser(context) async {
@@ -33,7 +29,7 @@ class LoginController extends GetxController {
 
         if (userCredential != null) {
           String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-          String collection = selectedRole.value == "User" ? 'users' : 'doctors';
+          String collection = role == "User" ? 'users' : 'doctors';
           DocumentSnapshot userDoc = await FirebaseFirestore.instance
               .collection(collection)
               .doc(currentUserId)
@@ -43,7 +39,7 @@ class LoginController extends GetxController {
             isLoading(false);
             Get.snackbar(
               "Login failed",
-              "No ${selectedRole.value.toLowerCase()} account found.",
+              "No ${role.toLowerCase()} account found.",
               snackPosition: SnackPosition.TOP,
               backgroundColor: AppColors.primeryColor,
               colorText: AppColors.whiteColor,
@@ -51,7 +47,7 @@ class LoginController extends GetxController {
             return;
           }
 
-          if (userDoc['role'] == selectedRole.value.toLowerCase()) {
+          if (userDoc['role'] == role.toLowerCase()) {
             isLoading(false);
             Get.snackbar(
               "Success",
@@ -60,7 +56,7 @@ class LoginController extends GetxController {
               backgroundColor: AppColors.primeryColor,
               colorText: AppColors.whiteColor,
             );
-            if (selectedRole.value == "User") {
+            if (role == "User") {
               Get.offAll(const Home());
             } else {
               Get.offAll(const DoctorHome());
@@ -69,7 +65,7 @@ class LoginController extends GetxController {
             isLoading(false);
             Get.snackbar(
               "Login failed",
-              "You are not authorized as a ${selectedRole.value.toLowerCase()}.",
+              "You are not authorized as a ${role.toLowerCase()}.",
               snackPosition: SnackPosition.TOP,
               backgroundColor: AppColors.primeryColor,
               colorText: AppColors.whiteColor,

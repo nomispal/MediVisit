@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
 import 'package:hams/general/list/home_icon_list.dart';
@@ -17,13 +18,16 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var controller = Get.put(HomeController());
     var searchController = Get.put(DocSearchController());
-    final formKey = GlobalKey<FormState>(); // Define formKey for search validation
+    final formKey = GlobalKey<FormState>();
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.primeryColor, AppColors.greenColor],
+            colors: [
+              AppColors.primeryColor.withOpacity(0.9),
+              AppColors.greenColor.withOpacity(0.9),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -31,16 +35,16 @@ class HomeScreen extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Search Section (White AppBar-like section at the top)
+              // Search Section
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(16),
                 color: AppColors.whiteColor,
                 child: Column(
                   children: [
                     Row(
                       children: [
                         AppString.welcome.text
-                            .size(AppFontSize.size16)
+                            .size(AppFontSize.size20)
                             .fontWeight(FontWeight.bold)
                             .color(AppColors.primeryColor)
                             .make(),
@@ -50,7 +54,7 @@ class HomeScreen extends StatelessWidget {
                                 () => Text(
                               "${controller.userName}",
                               style: TextStyle(
-                                fontSize: AppFontSize.size16,
+                                fontSize: AppFontSize.size18,
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.primeryColor,
                               ),
@@ -61,6 +65,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    10.heightBox,
                     Form(
                       key: formKey,
                       child: Row(
@@ -73,35 +78,41 @@ class HomeScreen extends StatelessWidget {
                                   vertical: 10.0,
                                   horizontal: 15.0,
                                 ),
+                                filled: true,
+                                fillColor: AppColors.whiteColor,
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: AppColors.primeryColor,
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(25),
                                   borderSide: BorderSide(
-                                    color: AppColors.primeryColor,
+                                    color: AppColors.primeryColor.withOpacity(0.5),
                                     width: 2.0,
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(25),
                                   borderSide: BorderSide(
                                     color: AppColors.primeryColor,
                                     width: 2.0,
                                   ),
                                 ),
                                 errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(25),
                                   borderSide: const BorderSide(
                                     color: Colors.red,
                                     width: 2.0,
                                   ),
                                 ),
                                 focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(25),
                                   borderSide: const BorderSide(
                                     color: Colors.red,
                                     width: 2.0,
                                   ),
                                 ),
-                                hintText: "Search doctor",
+                                hintText: "Search for a doctor...",
                                 hintStyle: TextStyle(
                                   color: AppColors.secondaryTextColor,
                                   fontSize: 16,
@@ -114,11 +125,22 @@ class HomeScreen extends StatelessWidget {
                           ),
                           10.widthBox,
                           Container(
-                            height: 45,
-                            width: 45,
+                            height: 50,
+                            width: 50,
                             decoration: BoxDecoration(
-                              color: AppColors.primeryColor,
-                              borderRadius: BorderRadius.circular(5),
+                              gradient: LinearGradient(
+                                colors: [AppColors.primeryColor, AppColors.greenColor],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: IconButton(
                               onPressed: () {
@@ -151,13 +173,13 @@ class HomeScreen extends StatelessWidget {
                                 size: 30,
                               ),
                             ),
-                          ),
+                          ).animate().scale(duration: 300.ms),
                         ],
                       ),
                     ),
                   ],
                 ),
-              ),
+              ).animate().fadeIn(duration: 800.ms),
               // Main Content
               Expanded(
                 child: SingleChildScrollView(
@@ -171,29 +193,45 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            "Popular Category"
+                            "Popular Categories"
                                 .text
-                                .color(AppColors.primeryColor)
-                                .size(AppFontSize.size16)
+                                .color(AppColors.whiteColor)
+                                .size(AppFontSize.size18)
                                 .fontWeight(FontWeight.bold)
-                                .make(),
+                                .make()
+                                .animate()
+                                .fadeIn(duration: 1000.ms),
                             10.heightBox,
                             SizedBox(
-                              height: 110,
+                              height: 120,
                               child: ListView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 scrollDirection: Axis.horizontal,
-                                itemCount: iconListTitle.length, // Use actual length
+                                itemCount: iconListTitle.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   return GestureDetector(
                                     onTap: () {
-                                      print("Tapped category: ${iconListTitle[index]}"); // Debug log
+                                      print("Tapped category: ${iconListTitle[index]}");
                                       Get.to(() => CategoryDetailsView(catName: iconListTitle[index]));
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: AppColors.greenColor,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            AppColors.greenColor,
+                                            AppColors.primeryColor,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
                                         borderRadius: BorderRadius.circular(15),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.2),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
                                       padding: const EdgeInsets.all(12),
                                       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -209,10 +247,12 @@ class HomeScreen extends StatelessWidget {
                                           iconListTitle[index]
                                               .text
                                               .color(AppColors.whiteColor)
+                                              .size(AppFontSize.size14)
+                                              .fontWeight(FontWeight.w500)
                                               .make(),
                                         ],
                                       ),
-                                    ),
+                                    ).animate().fadeIn(duration: 1200.ms).slideX(begin: 0.2),
                                   );
                                 },
                               ),
@@ -229,17 +269,19 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             "Popular Doctors"
                                 .text
-                                .color(AppColors.primeryColor)
-                                .size(AppFontSize.size16)
+                                .color(AppColors.whiteColor)
+                                .size(AppFontSize.size18)
                                 .fontWeight(FontWeight.bold)
-                                .make(),
+                                .make()
+                                .animate()
+                                .fadeIn(duration: 1400.ms),
                             10.heightBox,
                             FutureBuilder<QuerySnapshot>(
                               future: controller.getDoctorList(),
                               builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                 if (!snapshot.hasData) {
                                   return SizedBox(
-                                    height: 195,
+                                    height: 200,
                                     child: ListView.builder(
                                       physics: const BouncingScrollPhysics(),
                                       scrollDirection: Axis.horizontal,
@@ -287,12 +329,11 @@ class HomeScreen extends StatelessWidget {
                                   );
                                 } else {
                                   var data = snapshot.data?.docs;
-                                  // Debug: Log all doctor categories
                                   for (var doc in data!) {
                                     print("Doctor Category: ${doc['docCategory']}");
                                   }
                                   return SizedBox(
-                                    height: 195,
+                                    height: 200,
                                     child: ListView.builder(
                                       physics: const BouncingScrollPhysics(),
                                       scrollDirection: Axis.horizontal,
@@ -307,8 +348,15 @@ class HomeScreen extends StatelessWidget {
                                           },
                                           child: Container(
                                             decoration: BoxDecoration(
-                                              color: AppColors.bgDarkColor,
+                                              color: AppColors.whiteColor,
                                               borderRadius: BorderRadius.circular(15),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withOpacity(0.2),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
                                             ),
                                             padding: const EdgeInsets.only(bottom: 5),
                                             margin: const EdgeInsets.only(right: 8),
@@ -317,7 +365,10 @@ class HomeScreen extends StatelessWidget {
                                             child: Column(
                                               children: [
                                                 ClipRRect(
-                                                  borderRadius: BorderRadius.circular(15),
+                                                  borderRadius: const BorderRadius.only(
+                                                    topLeft: Radius.circular(15),
+                                                    topRight: Radius.circular(15),
+                                                  ),
                                                   child: imageUrl.isEmpty
                                                       ? Image.asset(
                                                     AppAssets.imgLogin,
@@ -345,9 +396,10 @@ class HomeScreen extends StatelessWidget {
                                                   padding: const EdgeInsets.symmetric(horizontal: 10),
                                                   child: Text(
                                                     data[index]['docName'] ?? 'Unknown',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontWeight: FontWeight.bold,
-                                                      fontSize: 16,
+                                                      fontSize: AppFontSize.size14,
+                                                      color: AppColors.primeryColor,
                                                     ),
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
@@ -359,7 +411,7 @@ class HomeScreen extends StatelessWidget {
                                                     .make(),
                                               ],
                                             ),
-                                          ),
+                                          ).animate().fadeIn(duration: 1600.ms).slideX(begin: 0.2),
                                         );
                                       },
                                     ),
@@ -370,7 +422,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      80.heightBox, // Extra padding for bottom navigation
+                      80.heightBox,
                     ],
                   ),
                 ),

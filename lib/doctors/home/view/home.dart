@@ -1,11 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hams/doctors/all%20reviews/all_reviews.dart';
 import 'package:hams/doctors/settings/view/setting_view.dart';
 import 'package:hams/doctors/total_appintment/view/total_appointment_view.dart';
 import 'package:hams/general/consts/consts.dart';
-import 'package:flutter/material.dart';
-
+import 'package:velocity_x/velocity_x.dart';
 import '../../../users/notification details/notification_details.dart';
 
 class DoctorHome extends StatefulWidget {
@@ -42,7 +43,6 @@ class _DoctorHomeState extends State<DoctorHome> {
       criticalAlert: true,
     )
         .then((NotificationSettings settings) async {
-      // Check the permission status and call submitData if allowed
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
         String? deviceToken = await messaging.getToken();
@@ -50,7 +50,6 @@ class _DoctorHomeState extends State<DoctorHome> {
       }
     });
 
-    // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Received a foreground message: ${message.notification?.title}');
       _showNotification(
@@ -60,17 +59,14 @@ class _DoctorHomeState extends State<DoctorHome> {
       );
     });
 
-    // Handle background and terminated message taps
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('Notification clicked! Opened app from background or terminated.');
       _navigateToDetails(message);
     });
 
-    // Check for messages when app is launched from a terminated state
     _checkForInitialMessage();
   }
 
-  // Initialize and create notification channel
   Future<void> _initializeNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -78,7 +74,6 @@ class _DoctorHomeState extends State<DoctorHome> {
     const InitializationSettings initializationSettings =
     InitializationSettings(android: initializationSettingsAndroid);
 
-    // Define how to handle notification responses (taps)
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
@@ -96,7 +91,6 @@ class _DoctorHomeState extends State<DoctorHome> {
       },
     );
 
-    // Create a notification channel (only for Android 8.0 or higher)
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel',
       'High Importance Notifications',
@@ -110,7 +104,6 @@ class _DoctorHomeState extends State<DoctorHome> {
         ?.createNotificationChannel(channel);
   }
 
-  // Function to show a notification using flutter_local_notifications
   Future<void> _showNotification(
       String? title, String? body, Map<String, dynamic> data) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
@@ -146,7 +139,6 @@ class _DoctorHomeState extends State<DoctorHome> {
   }
 
   Future<void> _checkForInitialMessage() async {
-    // Check if the app was opened via a notification when the app was terminated
     RemoteMessage? initialMessage =
     await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
@@ -155,7 +147,6 @@ class _DoctorHomeState extends State<DoctorHome> {
   }
 
   void submitData(String token) async {
-    // Get the current user's UID
     String? uid = FirebaseAuth.instance.currentUser?.uid;
 
     if (uid == null) {
@@ -164,11 +155,8 @@ class _DoctorHomeState extends State<DoctorHome> {
     }
 
     try {
-      // Reference to the document of the current user in the 'doctors' collection
       DocumentReference doctorRef =
       FirebaseFirestore.instance.collection('doctors').doc(uid);
-
-      // Get the document to check the current deviceToken
       DocumentSnapshot doctorDoc = await doctorRef.get();
 
       if (doctorDoc.exists) {
@@ -176,14 +164,11 @@ class _DoctorHomeState extends State<DoctorHome> {
         String? currentDeviceToken = data['deviceToken'];
 
         if (currentDeviceToken == null || currentDeviceToken.isEmpty) {
-          // If deviceToken is empty or null, update with the new token
           await doctorRef.update({'deviceToken': token});
           print("Token updated: $token");
         } else if (currentDeviceToken == token) {
-          // If the token is the same, do nothing
           print("Token is already up-to-date");
         } else {
-          // If the token is different, update it
           await doctorRef.update({'deviceToken': token});
           print("Token updated: $token");
         }
@@ -198,31 +183,113 @@ class _DoctorHomeState extends State<DoctorHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: screenList.elementAt(selectedIndex),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primeryColor.withOpacity(0.9),
+              AppColors.greenColor.withOpacity(0.9),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header with Doctor's Name
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: AppColors.whiteColor,
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: AppColors.primeryColor,
+                      child: Icon(
+                        Icons.person,
+                        size: 40,
+                        color: AppColors.whiteColor,
+                      ),
+                    ),
+                    10.widthBox,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        "Welcome, Doctor"
+                            .text
+                            .size(AppFontSize.size18)
+                            .fontWeight(FontWeight.bold)
+                            .color(AppColors.primeryColor)
+                            .make(),
+                        5.heightBox,
+                        "Manage your appointments and reviews"
+                            .text
+                            .size(AppFontSize.size14)
+                            .color(AppColors.secondaryTextColor)
+                            .make(),
+                      ],
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(duration: 800.ms),
+              // Main Content
+              Expanded(
+                child: screenList.elementAt(selectedIndex),
+              ),
+            ],
+          ),
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primeryColor,
+        unselectedItemColor: AppColors.secondaryTextColor,
+        backgroundColor: AppColors.whiteColor,
         currentIndex: selectedIndex,
         onTap: (value) {
           setState(() {
             selectedIndex = value;
           });
         },
-        items: const [
+        elevation: 10,
+        selectedLabelStyle: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: AppFontSize.size14,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: AppFontSize.size12,
+        ),
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.date_range),
+            icon: Icon(Icons.date_range, size: 28)
+                .animate()
+                .scale(duration: 300.ms)
+                .then()
+                .shake(duration: 500.ms, hz: 2),
+            activeIcon: Icon(Icons.date_range, size: 28, color: AppColors.primeryColor),
             label: "Appointments",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.reviews),
-            label: "Review",
+            icon: Icon(Icons.reviews, size: 28)
+                .animate()
+                .scale(duration: 300.ms)
+                .then()
+                .shake(duration: 500.ms, hz: 2),
+            activeIcon: Icon(Icons.reviews, size: 28, color: AppColors.primeryColor),
+            label: "Reviews",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.settings, size: 28)
+                .animate()
+                .scale(duration: 300.ms)
+                .then()
+                .shake(duration: 500.ms, hz: 2),
+            activeIcon: Icon(Icons.settings, size: 28, color: AppColors.primeryColor),
             label: "Settings",
           ),
         ],
-      ),
+      ).animate().slideY(begin: 0.3, duration: 800.ms),
     );
   }
 }

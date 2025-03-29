@@ -3,16 +3,16 @@ import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
 import 'package:hams/users/auth/controller/login_controller.dart';
 import 'package:hams/users/auth/reset_password/reset_password.dart';
-import 'package:hams/users/auth/view/signup_page.dart';
+import 'package:hams/users/auth/view/doctor_signup_page.dart';
 import 'package:hams/users/widgets/coustom_textfield.dart';
 import 'package:hams/users/widgets/loading_indicator.dart';
 
-class LoginView extends StatelessWidget {
-  const LoginView({super.key});
+class DoctorLoginView extends StatelessWidget {
+  const DoctorLoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var controller = Get.put(LoginController());
+    var controller = Get.put(LoginController(role: "Doctor"));
 
     return Scaffold(
       body: Container(
@@ -65,40 +65,6 @@ class LoginView extends StatelessWidget {
                         key: controller.formkey,
                         child: Column(
                           children: [
-                            // Role Selection Dropdown
-                            Obx(
-                                  () => DropdownButtonFormField<String>(
-                                value: controller.selectedRole.value,
-                                decoration: InputDecoration(
-                                  labelText: "Login As",
-                                  labelStyle: TextStyle(color: AppColors.primeryColor),
-                                  filled: true,
-                                  fillColor: AppColors.whiteColor,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: AppColors.primeryColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: AppColors.primeryColor),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: AppColors.primeryColor, width: 2),
-                                  ),
-                                ),
-                                items: ["User", "Doctor"]
-                                    .map((role) => DropdownMenuItem(
-                                  value: role,
-                                  child: Text(role),
-                                ))
-                                    .toList(),
-                                onChanged: (value) {
-                                  controller.setRole(value!);
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 15),
                             CoustomTextField(
                               validator: controller.validateemail,
                               textcontroller: controller.emailController,
@@ -192,7 +158,7 @@ class LoginView extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () {
-                                    Get.to(() => const SignupView());
+                                    Get.to(() => const DoctorSignupView());
                                   },
                                   child: Text(
                                     AppString.signup,
