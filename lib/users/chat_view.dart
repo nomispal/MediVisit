@@ -12,12 +12,14 @@ class ChatView extends StatefulWidget {
   final String doctorId;
   final String doctorName;
   final String userId;
+  final String? patientName; // Optional parameter for patient's name
 
   const ChatView({
     super.key,
     required this.doctorId,
     required this.doctorName,
     required this.userId,
+    this.patientName, // Optional: Pass patient's name if available
   });
 
   @override
@@ -30,6 +32,7 @@ class _ChatViewState extends State<ChatView> {
   final ImagePicker _picker = ImagePicker();
   bool isDoctor = false;
   bool isUploading = false;
+  String? patientName; // To store the patient's name if fetched
 
   @override
   void initState() {
@@ -37,7 +40,7 @@ class _ChatViewState extends State<ChatView> {
     _checkUserRole();
   }
 
-  // Check if the logged-in user is a doctor
+  // Check if the logged-in user is a doctor and fetch the patient's name if needed
   Future<void> _checkUserRole() async {
     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId == null) return;
@@ -45,6 +48,43 @@ class _ChatViewState extends State<ChatView> {
     setState(() {
       isDoctor = currentUserId == widget.doctorId;
     });
+
+    // If the logged-in user is a doctor, fetch the patient's name
+    if (isDoctor) {
+      if (widget.patientName != null) {
+        // Use the passed patientName if available
+        setState(() {
+          patientName = widget.patientName;
+        });
+      } else {
+        // Otherwise, fetch the patient's name from Firestore
+        await _fetchPatientName();
+      }
+    }
+  }
+
+  // Fetch the patient's name from Firestore
+  Future<void> _fetchPatientName() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .get();
+      if (userDoc.exists) {
+        setState(() {
+          patientName = userDoc['fullname'] ?? 'Patient';
+        });
+      } else {
+        setState(() {
+          patientName = 'Patient';
+        });
+      }
+    } catch (e) {
+      print("Error fetching patient name: $e");
+      setState(() {
+        patientName = 'Patient';
+      });
+    }
   }
 
   // Generate a unique chat ID based on user and doctor IDs
@@ -187,7 +227,9 @@ class _ChatViewState extends State<ChatView> {
                       onPressed: () => Get.back(),
                     ),
                     Expanded(
-                      child: "Chat with ${widget.doctorName}"
+                      child: (isDoctor
+                          ? "Chat with ${patientName ?? 'Patient'}"
+                          : "Chat with ${widget.doctorName}")
                           .text
                           .size(AppFontSize.size18)
                           .color(AppColors.whiteColor)

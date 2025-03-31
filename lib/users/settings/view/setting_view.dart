@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
+import 'package:hams/terms_and_conditions_page.dart';
 import 'package:hams/users/auth/view/role_selection_page.dart';
 import 'package:hams/users/widgets/coustom_iconbutton.dart';
 import 'package:image_picker/image_picker.dart';
@@ -170,7 +171,9 @@ class SettingsView extends StatelessWidget {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
-                                onTap: () {},
+                                onTap: () {
+                                  Get.to(() => const TermsAndConditionsPage());
+                                },
                                 title: "Terms & Condition",
                                 icon: Icon(
                                   Icons.edit_document,
@@ -188,7 +191,7 @@ class SettingsView extends StatelessWidget {
                                   end: Alignment.bottomRight,
                                 ),
                                 onTap: () async {
-                                  await controller.signOut(); // Call signOut
+                                  await controller.signOut();
                                   Get.offAll(() => const RoleSelectionPage());
                                 },
                                 title: "Logout",
