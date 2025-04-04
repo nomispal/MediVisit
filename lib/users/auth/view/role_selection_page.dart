@@ -43,7 +43,7 @@ class RoleSelectionPage extends StatelessWidget {
 
                   // Title
                   Text(
-                    "Welcome to Smadical",
+                    "Welcome to Hams",
                     style: TextStyle(
                       fontSize: AppFontSize.size20,
                       fontWeight: FontWeight.bold,
