@@ -4,7 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
 import 'package:velocity_x/velocity_x.dart';
-import 'package:url_launcher/url_launcher.dart'; // Added for contact functionality
+import 'package:url_launcher/url_launcher.dart'; // For contact functionality
+import 'package:flutter/services.dart'; // For clipboard functionality
+import 'package:hams/users/chat_view.dart'; // Import your chat view
+import 'package:firebase_auth/firebase_auth.dart'; // For getting current user ID
 
 class AppointmentDetails extends StatefulWidget {
   final Map<String, dynamic> appointment;
@@ -48,12 +51,71 @@ class _AppointmentDetailsState extends State<AppointmentDetails> {
     }
   }
 
-  Future<void> _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      Get.snackbar('Error', 'Could not launch $url',
-          snackPosition: SnackPosition.TOP, duration: Duration(seconds: 2));
+  // Function to validate and format the phone number
+  String _formatPhoneNumber(String phoneNumber) {
+    // Remove any non-digit characters (e.g., spaces, dashes)
+    String cleanedNumber = phoneNumber.replaceAll(RegExp(r'\D'), '');
+
+    // Check if the number already starts with a '+'
+    if (!cleanedNumber.startsWith('+')) {
+      // If not, prepend a default country code (e.g., +92 for Pakistan)
+      cleanedNumber = '+92$cleanedNumber';
+    }
+
+    return cleanedNumber;
+  }
+
+  // Function to launch URLs (tel: for calls)
+  Future<void> _launchURL(String scheme, String path) async {
+    // Validate and format the phone number if the scheme is 'tel'
+    String formattedPath = path;
+    if (scheme == 'tel') {
+      formattedPath = _formatPhoneNumber(path);
+    }
+
+    // Basic validation: ensure the number has at least 10 digits (excluding the country code)
+    if (scheme == 'tel') {
+      String digitsOnly = formattedPath.replaceAll(RegExp(r'\D'), '');
+      if (digitsOnly.length < 10) {
+        Get.snackbar(
+          'Error',
+          'Invalid phone number: $path',
+          snackPosition: SnackPosition.TOP,
+          duration: Duration(seconds: 2),
+          backgroundColor: AppColors.primeryColor,
+          colorText: AppColors.whiteColor,
+        );
+        return;
+      }
+    }
+
+    final Uri uri = Uri(scheme: scheme, path: formattedPath);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        // Fallback: Copy the phone number to the clipboard
+        await Clipboard.setData(ClipboardData(text: formattedPath));
+        Get.snackbar(
+          'Error',
+          'Could not launch $scheme:$formattedPath. Number copied to clipboard.',
+          snackPosition: SnackPosition.TOP,
+          duration: Duration(seconds: 2),
+          backgroundColor: AppColors.primeryColor,
+          colorText: AppColors.whiteColor,
+        );
+      }
+    } catch (e) {
+      // Fallback: Copy the phone number to the clipboard
+      await Clipboard.setData(ClipboardData(text: formattedPath));
+      Get.snackbar(
+        'Error',
+        'Failed to launch $scheme:$formattedPath: $e. Number copied to clipboard.',
+        snackPosition: SnackPosition.TOP,
+        duration: Duration(seconds: 2),
+        backgroundColor: AppColors.primeryColor,
+        colorText: AppColors.whiteColor,
+      );
     }
   }
 
@@ -66,7 +128,7 @@ class _AppointmentDetailsState extends State<AppointmentDetails> {
             borderRadius: BorderRadius.circular(20.r),
           ),
           title: Text(
-            "Contact Patient",
+            "Call Patient",
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -81,15 +143,19 @@ class _AppointmentDetailsState extends State<AppointmentDetails> {
                 title: Text('Call'),
                 onTap: () {
                   Navigator.pop(context);
-                  _launchURL('tel:${widget.appointment['appMobile']?.toString() ?? ''}');
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.message, color: AppColors.primeryColor),
-                title: Text('Message'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _launchURL('sms:${widget.appointment['appMobile']?.toString() ?? ''}');
+                  String phoneNumber = widget.appointment['appMobile']?.toString() ?? '';
+                  if (phoneNumber.isEmpty) {
+                    Get.snackbar(
+                      'Error',
+                      'Phone number not available',
+                      snackPosition: SnackPosition.TOP,
+                      duration: Duration(seconds: 2),
+                      backgroundColor: AppColors.primeryColor,
+                      colorText: AppColors.whiteColor,
+                    );
+                    return;
+                  }
+                  _launchURL('tel', phoneNumber);
                 },
               ),
             ],
@@ -116,6 +182,9 @@ class _AppointmentDetailsState extends State<AppointmentDetails> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine if the "Chat" button should be shown
+    bool canChat = _selectedStatus == 'accept' || _selectedStatus == 'complete';
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -284,7 +353,7 @@ class _AppointmentDetailsState extends State<AppointmentDetails> {
                               ),
                               child: Center(
                                 child: Text(
-                                  "Contact Patient",
+                                  "Call Patient",
                                   style: TextStyle(
                                     color: AppColors.whiteColor,
                                     fontSize: 16.sp,
@@ -293,6 +362,73 @@ class _AppointmentDetailsState extends State<AppointmentDetails> {
                               ),
                             ),
                           ),
+                          // Add the "Chat" button if the status is 'accept' or 'complete'
+                          if (canChat) ...[
+                            20.heightBox,
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25.r),
+                                ),
+                                elevation: 0,
+                                padding: EdgeInsets.zero,
+                              ),
+                              onPressed: () {
+                                String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                                if (currentUserId.isEmpty) {
+                                  Get.snackbar(
+                                    'Error',
+                                    'Doctor not logged in. Please log in to continue.',
+                                    snackPosition: SnackPosition.TOP,
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor: AppColors.primeryColor,
+                                    colorText: AppColors.whiteColor,
+                                  );
+                                  return;
+                                }
+                                String? patientId = widget.appointment['appBy']?.toString();
+                                if (patientId == null || patientId.isEmpty) {
+                                  Get.snackbar(
+                                    'Error',
+                                    'Patient ID not available for this appointment.',
+                                    snackPosition: SnackPosition.TOP,
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor: AppColors.primeryColor,
+                                    colorText: AppColors.whiteColor,
+                                  );
+                                  return;
+                                }
+                                Get.to(() => ChatView(
+                                  doctorId: currentUserId,
+                                  doctorName: widget.appointment['doctorName']?.toString() ?? 'Doctor',
+                                  userId: patientId,
+                                  patientName: widget.appointment['appName']?.toString(),
+                                ));
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [AppColors.primeryColor, AppColors.greenColor],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(25.r),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Chat with Patient",
+                                    style: TextStyle(
+                                      color: AppColors.whiteColor,
+                                      fontSize: 16.sp,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

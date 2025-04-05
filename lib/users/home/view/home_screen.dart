@@ -1,3 +1,4 @@
+import 'dart:convert'; // For Base64 decoding
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
@@ -339,7 +340,7 @@ class HomeScreen extends StatelessWidget {
                                       scrollDirection: Axis.horizontal,
                                       itemCount: data.length,
                                       itemBuilder: (BuildContext context, int index) {
-                                        String imageUrl = data[index].data().toString().contains('image')
+                                        String imageBase64 = data[index].data().toString().contains('image')
                                             ? data[index]["image"]
                                             : "";
                                         return GestureDetector(
@@ -369,15 +370,15 @@ class HomeScreen extends StatelessWidget {
                                                     topLeft: Radius.circular(15),
                                                     topRight: Radius.circular(15),
                                                   ),
-                                                  child: imageUrl.isEmpty
+                                                  child: imageBase64.isEmpty
                                                       ? Image.asset(
                                                     AppAssets.imgLogin,
                                                     height: 130,
                                                     width: double.infinity,
                                                     fit: BoxFit.cover,
                                                   )
-                                                      : Image.network(
-                                                    imageUrl,
+                                                      : Image.memory(
+                                                    base64Decode(imageBase64),
                                                     height: 130,
                                                     width: double.infinity,
                                                     fit: BoxFit.cover,

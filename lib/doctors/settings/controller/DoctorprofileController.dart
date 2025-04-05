@@ -1,16 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:convert'; // For Base64 encoding/decoding
 
 class Doctorprofilecontroller extends GetxController {
   var isLoading = false.obs;
   var username = "".obs;
   var email = "".obs;
-  var profileImageUrl = "".obs;
+  var profileImageUrl = "".obs; // Will now store the Base64 string
 
   @override
   void onInit() {
@@ -28,7 +28,7 @@ class Doctorprofilecontroller extends GetxController {
         if (doctorDoc.exists) {
           username.value = doctorDoc['docName'] ?? '';
           email.value = doctorDoc['docEmail'] ?? '';
-          profileImageUrl.value = doctorDoc['image'] ?? '';
+          profileImageUrl.value = doctorDoc['image'] ?? ''; // Base64 string or empty
         }
       }
     } catch (e) {
@@ -40,10 +40,18 @@ class Doctorprofilecontroller extends GetxController {
 
   Future<void> pickImage(ImageSource source) async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: source);
+      // Pick the image with compression
+      final pickedFile = await ImagePicker().pickImage(
+        source: source,
+        maxHeight: 512, // Resize to reduce file size
+        maxWidth: 512,
+        imageQuality: 85, // Compress the image (0-100)
+      );
       if (pickedFile != null) {
         File imageFile = File(pickedFile.path);
         await uploadImage(imageFile);
+      } else {
+        Get.snackbar("Info", "No image selected");
       }
     } catch (e) {
       Get.snackbar("Error", "Failed to pick image: $e");
@@ -54,20 +62,40 @@ class Doctorprofilecontroller extends GetxController {
     try {
       isLoading(true);
       String? uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
+      if (uid == null) {
+        Get.snackbar("Error", "User not authenticated. Please log in.");
+        return;
+      }
 
-      Reference storageRef =
-      FirebaseStorage.instance.ref().child('doctor_images/$uid.jpg');
-      await storageRef.putFile(imageFile);
-      String downloadUrl = await storageRef.getDownloadURL();
+      // Check file size before converting to Base64
+      int fileSizeInBytes = await imageFile.length();
+      const int maxSizeInBytes = 700 * 1024; // 700 KB to be safe (Base64 increases size by ~33%)
+      if (fileSizeInBytes > maxSizeInBytes) {
+        Get.snackbar("Error", "Image is too large. Maximum size is 700 KB.");
+        return;
+      }
 
-      await FirebaseFirestore.instance
-          .collection('doctors')
-          .doc(uid)
-          .update({'image': downloadUrl});
-      profileImageUrl.value = downloadUrl;
+      // Convert the image to Base64
+      List<int> imageBytes = await imageFile.readAsBytes();
+      String base64Image = base64Encode(imageBytes);
+
+      // Check the size of the Base64 string (Firestore document size limit is 1 MB)
+      int base64SizeInBytes = base64Image.length;
+      if (base64SizeInBytes > 1 * 1024 * 1024) {
+        Get.snackbar("Error", "Encoded image is too large for Firestore. Please use a smaller image.");
+        return;
+      }
+
+      // Store the Base64 string in Firestore
+      await FirebaseFirestore.instance.collection('doctors').doc(uid).update({
+        'image': base64Image,
+      });
+
+      // Update the local state with the Base64 string
+      profileImageUrl.value = base64Image;
+      Get.snackbar("Success", "Profile image updated successfully");
     } catch (e) {
-      Get.snackbar("Error", "Failed to upload image: $e");
+      Get.snackbar("Error", "Failed to upload image to Firestore: $e");
     } finally {
       isLoading(false);
     }

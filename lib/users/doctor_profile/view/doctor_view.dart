@@ -1,3 +1,4 @@
+import 'dart:convert'; // For Base64 decoding
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -62,7 +63,7 @@ class DoctorProfile extends StatelessWidget {
                   ],
                 ),
               ),
-              // Main Content (unchanged)
+              // Main Content
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -87,8 +88,8 @@ class DoctorProfile extends StatelessWidget {
                                   height: 75,
                                   width: 75,
                                   child: doc.data().toString().contains('image') && doc['image'] != ''
-                                      ? Image.network(
-                                    doc['image'],
+                                      ? Image.memory(
+                                    base64Decode(doc['image']),
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {

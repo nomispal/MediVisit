@@ -33,10 +33,6 @@ class TotalAppointment extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back, color: AppColors.whiteColor),
-                      onPressed: () => Get.back(),
-                    ),
                     Expanded(
                       child: Text(
                         "All Appointments",

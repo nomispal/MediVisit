@@ -1,3 +1,4 @@
+import 'dart:convert'; // For Base64 decoding
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hams/general/consts/consts.dart';
@@ -88,17 +89,32 @@ class SettingsView extends StatelessWidget {
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
-                                      image: DecorationImage(
-                                        image: controller.profileImageUrl
-                                            .value.isEmpty
-                                            ? const AssetImage(
-                                          'assets/images/img_login.jpg',
-                                        )
-                                            : NetworkImage(
-                                          controller
-                                              .profileImageUrl.value,
-                                        ) as ImageProvider,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius:
+                                      BorderRadius.circular(75),
+                                      child: controller.profileImageUrl
+                                          .value.isEmpty
+                                          ? Image.asset(
+                                        'assets/images/img_login.jpg',
                                         fit: BoxFit.cover,
+                                        height: 150,
+                                        width: 150,
+                                      )
+                                          : Image.memory(
+                                        base64Decode(
+                                            controller.profileImageUrl.value),
+                                        fit: BoxFit.cover,
+                                        height: 150,
+                                        width: 150,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Image.asset(
+                                            'assets/images/img_login.jpg',
+                                            fit: BoxFit.cover,
+                                            height: 150,
+                                            width: 150,
+                                          );
+                                        },
                                       ),
                                     ),
                                   ),

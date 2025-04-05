@@ -321,7 +321,7 @@ class _TotalAppointmentState extends State<TotalAppointment> {
                         if (upcomingAppointments.isNotEmpty) ...[
                           "Upcoming Appointments"
                               .text
-                              .color(AppColors.primeryColor)
+                              .color(AppColors.bgColor)
                               .size(AppFontSize.size16)
                               .fontWeight(FontWeight.bold)
                               .make(),
@@ -335,7 +335,7 @@ class _TotalAppointmentState extends State<TotalAppointment> {
                           20.heightBox,
                           "Completed Appointments"
                               .text
-                              .color(AppColors.primeryColor)
+                              .color(AppColors.bgColor)
                               .size(AppFontSize.size16)
                               .fontWeight(FontWeight.bold)
                               .make(),
