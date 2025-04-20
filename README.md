@@ -1,16 +1,46 @@
-# hams
+# 🩺 Doctor Appointment Management System
 
-A new Flutter project.
+A complete medical appointment scheduling app designed to simplify doctor-patient interaction and streamline clinic operations. This app offers user-friendly interfaces for both doctors and patients to handle appointments with ease and efficiency.
 
-## Getting Started
+![App UI Banner](banner-image-url-if-any)
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 📱 Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- ✅ Patient Registration & Login
+- ✅ Doctor Profiles with Specialties & Availability
+- ✅ Real-time Appointment Booking
+- ✅ Calendar View for Appointments
+- ✅ Appointment Reminders
+- ✅ Medical History Tracking
+- ✅ Clean & Responsive UI
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 📷 App Preview
+
+![2](https://github.com/user-attachments/assets/98b834bb-746d-4fdc-9e8a-79bf852fd530)
+
+![3](https://github.com/user-attachments/assets/14e218f2-076a-462e-8e15-1e76755a922c)
+
+
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Flutter 
+- **Backend**: Firebase / Node.js 
+- **Database**: Firestore
+- **Design Tool**: Figma
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/your-username/doctor-appointment-app.git
+cd doctor-appointment-app
