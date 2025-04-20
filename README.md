@@ -2,7 +2,6 @@
 
 A complete medical appointment scheduling app designed to simplify doctor-patient interaction and streamline clinic operations. This app offers user-friendly interfaces for both doctors and patients to handle appointments with ease and efficiency.
 
-![App UI Banner]
 
 ![1](https://github.com/user-attachments/assets/7784082f-887e-424f-be5f-be81f3dda425)
 
@@ -14,9 +13,7 @@ A complete medical appointment scheduling app designed to simplify doctor-patien
 - ✅ Patient Registration & Login
 - ✅ Doctor Profiles with Specialties & Availability
 - ✅ Real-time Appointment Booking
-- ✅ Calendar View for Appointments
 - ✅ Appointment Reminders
-- ✅ Medical History Tracking
 - ✅ Clean & Responsive UI
 
 ---
